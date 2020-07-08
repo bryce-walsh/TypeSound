@@ -8,11 +8,26 @@
             var AudioContextFunc = window.AudioContext || window.webkitAudioContext;
             var audioContext = new AudioContextFunc();
             var player=new WebAudioFontPlayer();
-            var currentNotes = new Map();
+            var currentSounds = new Map();
             var keyEnabledArray = Array(222).fill(true);
             var keydown = false;
+            var noteToCode = new Map();
             player.loader.decodeAfterLoading(audioContext, '_tone_0330_GeneralUserGS_sf2_file');
             
+            readNotes();
+            
+            function readNotes() {
+            	jQuery.get('CodeToNote.txt', function(data) {
+            	   	console.log(data);
+            	   	var lines = data.split(/\r?\n/);
+            	   	lines.forEach(function(n) {
+            	   		var split = n.split("\t");
+            	   		noteToCode[split[1]] = split[0]
+            	   		console.log(noteToCode);
+            	   	});
+            	});
+            }
+
             function playNote(val){
                 //player.queueWaveTable(audioContext, audioContext.destination
                 //    , _tone_0250_SoundBlasterOld_sf2, 0, 12*4+val, 2);
@@ -22,20 +37,26 @@
                 return waveTableObject;
             }
 
+            function codeToNote(code){
+            	note = code;
+
+            	return note;
+            }
+
             $(document).ready(function() {
             	$("#demo").on('keydown', function(e) {
             		code = e.keyCode; 
-			  		console.log(code);
-            		if (!currentNotes.has(code)) {
-			  			envelope = playNote(code);
-			  			currentNotes.set(code, envelope);
+            		if (!currentSounds.has(code)) {
+            			noteVal = codeToNote(code);
+			  			envelope = playNote(noteVal);
+			  			currentSounds.set(code, envelope);
 			  		}
 			  	});
 			  	$("#demo").on('keyup', function(e) {
             		code = e.keyCode; 
 			  		console.log(code);
-			  		envelope = currentNotes.get(code);
-			  		currentNotes.delete(code)
+			  		envelope = currentSounds.get(code);
+			  		currentSounds.delete(code);
 			  		envelope.cancel();
 			  	});
 			});
